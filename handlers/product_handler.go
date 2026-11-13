@@ -63,6 +63,18 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(produc)
 }
+func (h *ProductHandler) Search(w http.ResponseWriter, r *http.Request) {
+	keyword := r.URL.Query().Get("name")
+	produc, err := h.Repo.Search(r.Context(), keyword)
+	if err != nil {
+		log.Printf("Get /products: %v", err)
+		http.Error(w, "Mahsulotlarni olishda xatolik", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(produc)
+}
 
 func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)

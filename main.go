@@ -12,6 +12,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("env ulanishda xatolik ")
@@ -37,6 +38,7 @@ func main() {
 	mux.HandleFunc("GET /products/{id}", productHandler.GetByID)
 	mux.HandleFunc("PUT /products/{id}", productHandler.Update)
 	mux.HandleFunc("DELETE /products/{id}", productHandler.Delete)
+	mux.HandleFunc("GET /products/search", productHandler.Search)
 
 	log.Println("Server :8080 portida ishga tushdi...")
 	if err := http.ListenAndServe(":8080", mux); err != nil {

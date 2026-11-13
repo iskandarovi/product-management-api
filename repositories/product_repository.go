@@ -20,7 +20,6 @@ func (r *ProductRepository) Create(ctx context.Context, product models.Product) 
 		returning id, name, price, quantity, created_at;
 	`
 
-
 	var createdProduct models.Product
 
 	err := r.DB.QueryRow(ctx, query,
@@ -64,6 +63,40 @@ func (r *ProductRepository) GetAll(ctx context.Context) ([]models.Product, error
 		productslar = append(productslar, prod)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return productslar, nil
+}
+func (r *ProductRepository) Search(ctx context.Context, keyword string) ([]models.Product, error) {
+	const query = `
+	SELECT * FROM products
+	WHERE name ILIKE $1;
+	`
+	qidiruv := "%" + keyword + "%"
+	rows, err := r.DB.Query(ctx, query, qidiruv)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var productslar []models.Product
+
+	for rows.Next() {
+		var prod models.Product
+		err := rows.Scan(
+			&prod.ID,
+			&prod.Name,
+			&prod.Price,
+			&prod.Quantity,
+			&prod.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		productslar = append(productslar, prod)
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
