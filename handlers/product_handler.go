@@ -43,7 +43,7 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	createdProduct, err := h.Repo.Create(r.Context(), newProduct)
 	if err != nil {
 		log.Printf("POST /products da xatolik: %v", err)
-		http.Error(w, "Mahsulotni saqlashda server xatosi", http.StatusInternalServerError)
+		http.Error(w, "produc saqlashda server xatosi", http.StatusInternalServerError)
 		return
 	}
 
@@ -56,13 +56,52 @@ func (h *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	produc, err := h.Repo.GetAll(r.Context())
 	if err != nil {
 		log.Printf("Get /products: %v", err)
-		http.Error(w, "Mahsulotlarni olishda xatolik", http.StatusInternalServerError)
+		http.Error(w, "produc olishda xatolik", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(produc)
 }
+func (h *ProductHandler) Sort(w http.ResponseWriter, r *http.Request) {
+	order := r.URL.Query().Get("order")
+	produc, err := h.Repo.Sort(r.Context(), order)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(produc)
+}
+func (h *ProductHandler) Pagination(w http.ResponseWriter, r *http.Request) {
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		http.Error(w, "page notogri", http.StatusBadRequest)
+		return
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		http.Error(w, "limit notogri", http.StatusBadRequest)
+		return
+	}
+
+	produc, err := h.Repo.Pagination(r.Context(), page, limit)
+	if err != nil {
+		log.Printf("Get /products/pagination: %v", err)
+		http.Error(w, "produc olish xato", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(produc)
+}
+
 func (h *ProductHandler) Search(w http.ResponseWriter, r *http.Request) {
 	keyword := r.URL.Query().Get("name")
 	produc, err := h.Repo.Search(r.Context(), keyword)
